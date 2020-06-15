@@ -88,7 +88,7 @@ public class MonitorFilter extends ListenableFilter {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             invocation.setAttachment(MONITOR_FILTER_START_TIME, String.valueOf(System.currentTimeMillis()));
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
-        }
+        } // AsyncToSyncInvoker
         return invoker.invoke(invocation); // proceed invocation chain
     }
 

@@ -65,9 +65,12 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         if (i > 0) {
             create(path.substring(0, i), false);
         }
+        // 创建临时节点还是持久性节点
         if (ephemeral) {
+            // dubbo创建临时节点，与客户端会话绑定，一旦会话失效，创建的所有临时节点都会删除
             createEphemeral(path);
         } else {
+            // 一旦创建，就一直存在zk当中，除非主动删除掉
             createPersistent(path);
         }
     }

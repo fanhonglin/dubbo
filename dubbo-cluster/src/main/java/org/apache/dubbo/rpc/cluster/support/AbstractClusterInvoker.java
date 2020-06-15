@@ -242,9 +242,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
 
+        // 进入RegistryDirectory 以及 Router路由
         List<Invoker<T>> invokers = list(invocation);
+
+        // 负载均衡
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
+        //
         return doInvoke(invocation, invokers, loadbalance);
     }
 

@@ -53,7 +53,8 @@ public class InvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
+        // ListenerInvokerWrapper,
+        return invoker.invoke(invocation); // DelegateProviderMetaDataInvoker
     }
 
     @Override

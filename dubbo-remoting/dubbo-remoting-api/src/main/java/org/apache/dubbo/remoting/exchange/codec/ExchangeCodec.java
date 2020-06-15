@@ -66,8 +66,10 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         if (msg instanceof Request) {
+            // 编码request
             encodeRequest(channel, buffer, (Request) msg);
         } else if (msg instanceof Response) {
+            // 编码response
             encodeResponse(channel, buffer, (Response) msg);
         } else {
             super.encode(channel, buffer, msg);
@@ -76,7 +78,10 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+
+        // 解码
         int readable = buffer.readableBytes();
+        // 截取16字节
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
         buffer.readBytes(header);
         return decode(channel, buffer, readable, header);
@@ -84,7 +89,10 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Override
     protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] header) throws IOException {
+
+        // 解码
         // check magic number.
+        // 检查魔术
         if (readable > 0 && header[0] != MAGIC_HIGH
                 || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
@@ -119,6 +127,7 @@ public class ExchangeCodec extends TelnetCodec {
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, len);
 
         try {
+            // 解码消息体
             return decodeBody(channel, is, header);
         } finally {
             if (is.available() > 0) {
@@ -137,6 +146,8 @@ public class ExchangeCodec extends TelnetCodec {
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
         byte flag = header[2], proto = (byte) (flag & SERIALIZATION_MASK);
         // get request id.
+
+        // 检查flag,双向还是单向
         long id = Bytes.bytes2long(header, 4);
         if ((flag & FLAG_REQUEST) == 0) {
             // decode response.
@@ -208,12 +219,17 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
+
+        // 编码协议
         Serialization serialization = getSerialization(channel);
         // header.
+        // 设置16byte的头信息
+        // 第一个字节
         byte[] header = new byte[HEADER_LENGTH];
         // set magic number.
         Bytes.short2bytes(MAGIC, header);
 
+        // 第二个字节
         // set request and serialization flag.
         header[2] = (byte) (FLAG_REQUEST | serialization.getContentTypeId());
 
@@ -225,6 +241,7 @@ public class ExchangeCodec extends TelnetCodec {
         }
 
         // set request id.
+        // 5-12个字节， 8个字节
         Bytes.long2bytes(req.getId(), header, 4);
 
         // encode request data.
@@ -249,6 +266,8 @@ public class ExchangeCodec extends TelnetCodec {
 
         // write
         buffer.writerIndex(savedWriteIndex);
+
+        // 设置消息头
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
     }
@@ -267,6 +286,7 @@ public class ExchangeCodec extends TelnetCodec {
                 header[2] |= FLAG_EVENT;
             }
             // set response status.
+            // 设置了第四个字节的状态
             byte status = res.getStatus();
             header[3] = status;
             // set request id.

@@ -88,10 +88,17 @@ public class NettyServer extends AbstractServer implements Server {
     protected void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
 
+
+        // dubbo线程池模型
+        // 主线程为一个
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+
+        // 工作线程，线程个数 Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
+        // netty handler，用于消息的接受
+        // channelRead
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
@@ -107,15 +114,21 @@ public class NettyServer extends AbstractServer implements Server {
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+
+                                // 解码
                                 .addLast("decoder", adapter.getDecoder())
+
+                                // 编码
                                 .addLast("encoder", adapter.getEncoder())
                                 .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
-        // bind
+
+        // bind 绑定接口
         ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
         channelFuture.syncUninterruptibly();
+
         channel = channelFuture.channel();
 
     }

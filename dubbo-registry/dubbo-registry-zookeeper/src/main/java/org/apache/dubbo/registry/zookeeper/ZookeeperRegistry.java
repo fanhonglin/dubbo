@@ -73,6 +73,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private final ZookeeperClient zkClient;
 
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+        // 调用父类
         super(url);
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
@@ -82,8 +83,11 @@ public class ZookeeperRegistry extends FailbackRegistry {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
+
+        // zkclient连接zookeeper
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener(state -> {
+            // 重连
             if (state == StateListener.RECONNECTED) {
                 try {
                     recover();
@@ -174,12 +178,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         listeners.putIfAbsent(listener, (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
                         zkListener = listeners.get(listener);
                     }
+                    // 创建持久化节点
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
                         urls.addAll(toUrlsWithEmpty(url, path, children));
                     }
                 }
+                // 服务端发布的信息缓存到本地
                 notify(url, listener, urls);
             }
         } catch (Throwable e) {

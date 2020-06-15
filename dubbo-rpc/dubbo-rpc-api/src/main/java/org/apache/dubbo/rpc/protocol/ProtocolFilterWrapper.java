@@ -79,6 +79,7 @@ public class ProtocolFilterWrapper implements Protocol {
                     public Result invoke(Invocation invocation) throws RpcException {
                         Result asyncResult;
                         try {
+                            //ConsumerContextFilter, FutureFilter, MonitorFilter,EchoFilter, ClassLoaderFilter,GenericFilter,ContextFilter,TraceFilter,TimeoutFilter,MonitorFilter,ExceptionFilter
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
                             // onError callback
@@ -117,14 +118,18 @@ public class ProtocolFilterWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+            // RegistryProtocol ,zookeeper
             return protocol.export(invoker);
         }
+        // 进入DobboProtocol，netty
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+
+            // RegistryProtocol.refer
             return protocol.refer(type, url);
         }
         return buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
@@ -154,6 +159,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
+            //ProtocolFilterWrapper
             Result asyncResult = filterInvoker.invoke(invocation);
 
             asyncResult = asyncResult.whenCompleteWithContext((r, t) -> {

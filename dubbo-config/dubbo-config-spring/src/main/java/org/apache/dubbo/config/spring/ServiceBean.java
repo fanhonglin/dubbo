@@ -333,6 +333,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      */
     @Override
     public void export() {
+        // 暴露接口
         super.export();
         // Publish ServiceBeanExportedEvent
         publishExportEvent();

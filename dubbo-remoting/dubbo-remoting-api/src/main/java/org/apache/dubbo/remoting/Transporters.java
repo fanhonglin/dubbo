@@ -53,6 +53,8 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 调用实现类 NettyTransporter， 默认调用netty @SPI("netty")
+        // netty=org.apache.dubbo.remoting.transport.netty4.NettyTransporter
         return getTransporter().bind(url, handler);
     }
 
@@ -76,7 +78,26 @@ public class Transporters {
     }
 
     public static Transporter getTransporter() {
+
+        // 获取代理类
+        // 调用bind的时候，1、先调用url.getParameter，通过从参数URL当中获取值，
+        // String extName = url.getParameter("server", url.getParameter("transporter", "netty"));
+        // ExtensionLoader.getExtensionLoader(org.apache.dubbo.remoting.Transporter.class).getExtension(extName) 获取到实现类是哪一个
+        // 2、再调用bind方法
         return ExtensionLoader.getExtensionLoader(Transporter.class).getAdaptiveExtension();
+
+        // 代理类的实现
+        //     public org.apache.dubbo.remoting.Server bind(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
+        //        if (arg0 == null) throw new IllegalArgumentException("url == null");
+        //        org.apache.dubbo.common.URL url = arg0;
+        //
+        //        // 实现类会调用url的getParameter方法，去获取加载哪一个实现类
+        //        String extName = url.getParameter("server", url.getParameter("transporter", "netty"));
+        //        if (extName == null)
+        //            throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.Transporter) name from url (" + url.toString() + ") use keys([server, transporter])");
+        //        org.apache.dubbo.remoting.Transporter extension = (org.apache.dubbo.remoting.Transporter) ExtensionLoader.getExtensionLoader(org.apache.dubbo.remoting.Transporter.class).getExtension(extName);
+        //        return extension.bind(arg0, arg1);
+        //    }
     }
 
 }

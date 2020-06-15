@@ -68,6 +68,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     private final HashedWheelTimer retryTimer;
 
     public FailbackRegistry(URL url) {
+
+        // 调用父类
         super(url);
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
@@ -233,6 +235,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
+            // 向服务器发送请求，创建节点
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -372,6 +375,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     @Override
     protected void recover() throws Exception {
         // register
+        // 注册
         Set<URL> recoverRegistered = new HashSet<URL>(getRegistered());
         if (!recoverRegistered.isEmpty()) {
             if (logger.isInfoEnabled()) {
@@ -382,6 +386,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
         }
         // subscribe
+        // 订阅
         Map<URL, Set<NotifyListener>> recoverSubscribed = new HashMap<URL, Set<NotifyListener>>(getSubscribed());
         if (!recoverSubscribed.isEmpty()) {
             if (logger.isInfoEnabled()) {

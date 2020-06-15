@@ -112,6 +112,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    // zookeeper
     protected abstract Registry createRegistry(URL url);
 
 }

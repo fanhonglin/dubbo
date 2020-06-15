@@ -37,10 +37,11 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
         if (message instanceof MultiMessage) {
             MultiMessage list = (MultiMessage) message;
             for (Object obj : list) {
+
                 handler.received(channel, obj);
             }
         } else {
-            handler.received(channel, message);
+            handler.received(channel, message);  // HeartbeatHandler
         }
     }
 }

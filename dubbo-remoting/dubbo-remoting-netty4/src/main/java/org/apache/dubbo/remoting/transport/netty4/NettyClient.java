@@ -87,7 +87,10 @@ public class NettyClient extends AbstractClient {
      */
     @Override
     protected void doOpen() throws Throwable {
+        // client， provider接收
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
+
+        // 启动一个线程
         bootstrap = new Bootstrap();
         bootstrap.group(nioEventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -107,8 +110,12 @@ public class NettyClient extends AbstractClient {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+
+                // netty 客户端编解码
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+
+                        // 编码和解码
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))

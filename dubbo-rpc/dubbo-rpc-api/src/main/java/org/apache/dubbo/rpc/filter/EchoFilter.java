@@ -38,7 +38,7 @@ public class EchoFilter implements Filter {
         if (inv.getMethodName().equals($ECHO) && inv.getArguments() != null && inv.getArguments().length == 1) {
             return AsyncRpcResult.newDefaultAsyncResult(inv.getArguments()[0], inv);
         }
-        return invoker.invoke(inv);
+        return invoker.invoke(inv); //
     }
 
 }

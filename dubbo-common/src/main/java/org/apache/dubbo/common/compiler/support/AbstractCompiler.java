@@ -47,6 +47,8 @@ public abstract class AbstractCompiler implements Compiler {
         } else {
             throw new IllegalArgumentException("No such class name in " + code);
         }
+
+        // 从code 当中 提取classname
         String className = pkg != null && pkg.length() > 0 ? pkg + "." + cls : cls;
         try {
             return Class.forName(className, true, org.apache.dubbo.common.utils.ClassUtils.getCallerClassLoader(getClass()));
@@ -55,6 +57,7 @@ public abstract class AbstractCompiler implements Compiler {
                 throw new IllegalStateException("The java code not endsWith \"}\", code: \n" + code + "\n");
             }
             try {
+                // 如果报错，那么直接调用JavassistCompiler的 doCompile方法进行编译
                 return doCompile(className, code);
             } catch (RuntimeException t) {
                 throw t;

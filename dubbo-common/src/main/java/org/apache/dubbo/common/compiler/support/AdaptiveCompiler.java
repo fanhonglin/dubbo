@@ -37,11 +37,19 @@ public class AdaptiveCompiler implements Compiler {
         Compiler compiler;
         ExtensionLoader<Compiler> loader = ExtensionLoader.getExtensionLoader(Compiler.class);
         String name = DEFAULT_COMPILER; // copy reference
+
+        // 如果没有设置，则为javassist
+        // 设置了，通过名字获取
+        // jdk=org.apache.dubbo.common.compiler.support.JdkCompiler
+        // javassist=org.apache.dubbo.common.compiler.support.JavassistCompiler
         if (name != null && name.length() > 0) {
             compiler = loader.getExtension(name);
         } else {
+            // 默认获取 @SPI的value @SPI("javassist")，
+            // javassist=org.apache.dubbo.common.compiler.support.JavassistCompiler
             compiler = loader.getDefaultExtension();
         }
+        // 调用真正的JavassistCompiler compile方法
         return compiler.compile(code, classLoader);
     }
 

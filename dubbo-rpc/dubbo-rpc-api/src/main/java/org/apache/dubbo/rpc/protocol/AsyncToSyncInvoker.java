@@ -49,7 +49,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        Result asyncResult = invoker.invoke(invocation);
+        Result asyncResult = invoker.invoke(invocation); // DubboInvoker
 
         try {
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {

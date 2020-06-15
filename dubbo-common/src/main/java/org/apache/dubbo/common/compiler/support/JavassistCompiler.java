@@ -40,22 +40,26 @@ public class JavassistCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String source) throws Throwable {
+
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(name);
 
         // process imported classes
+        // 正则匹配所有的的import包
         Matcher matcher = IMPORT_PATTERN.matcher(source);
         while (matcher.find()) {
             builder.addImports(matcher.group(1).trim());
         }
 
         // process extended super class
+        // 正则匹配所有extended的包，并创建class对象，使用Javaassist添加extends
         matcher = EXTENDS_PATTERN.matcher(source);
         if (matcher.find()) {
             builder.setSuperClassName(matcher.group(1).trim());
         }
 
         // process implemented interfaces
+        // 正则匹配戳右implementes包，并使用javassist添加implemented
         matcher = IMPLEMENTS_PATTERN.matcher(source);
         if (matcher.find()) {
             String[] ifaces = matcher.group(1).trim().split("\\,");
@@ -63,6 +67,7 @@ public class JavassistCompiler extends AbstractCompiler {
         }
 
         // process constructors, fields, methods
+        // 正则匹配构造器，字段、方法
         String body = source.substring(source.indexOf('{') + 1, source.length() - 1);
         String[] methods = METHODS_PATTERN.split(body);
         String className = ClassUtils.getSimpleClassName(name);
@@ -78,6 +83,8 @@ public class JavassistCompiler extends AbstractCompiler {
 
         // compile
         ClassLoader classLoader = org.apache.dubbo.common.utils.ClassUtils.getCallerClassLoader(getClass());
+
+        // 创建代理class
         CtClass cls = builder.build(classLoader);
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }

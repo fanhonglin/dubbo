@@ -139,31 +139,39 @@ public class CtClassBuilder {
      * build CtClass object
      */
     public CtClass build(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+
+        // 创建代理，修改字节码
         ClassPool pool = new ClassPool(true);
         pool.appendClassPath(new LoaderClassPath(classLoader));
         
         // create class
+        // 创建class
         CtClass ctClass = pool.makeClass(className, pool.get(superClassName));
 
         // add imported packages
+        // 加入引用包
         imports.stream().forEach(pool::importPackage);
 
         // add implemented interfaces
+        // 实现的接口
         for (String iface : ifaces) {
             ctClass.addInterface(pool.get(iface));
         }
 
         // add constructors
+        // 添加构造
         for (String constructor : constructors) {
             ctClass.addConstructor(CtNewConstructor.make(constructor, ctClass));
         }
 
         // add fields
+        // 添加属性
         for (String field : fields) {
             ctClass.addField(CtField.make(field, ctClass));
         }
 
         // add methods
+        // 添加方法
         for (String method : methods) {
             ctClass.addMethod(CtNewMethod.make(method, ctClass));
         }

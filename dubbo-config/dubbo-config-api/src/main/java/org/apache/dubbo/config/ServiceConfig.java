@@ -412,6 +412,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
+        // 暴露url
         doExportUrls();
     }
 
@@ -450,10 +451,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
+
+        // 代表一个服务可以有多种通信协议，例如TCP(默认),http
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
             ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
             ApplicationModel.initProviderModel(pathKey, providerModel);
+            // 注册
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -573,9 +577,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+
+                // 暴露本地服务
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
+
+            // 暴露远程服务
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (!isOnlyInJvm() && logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -601,10 +609,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
+                        // 获取invoker对象 ， ref 接口转换成invoker对象
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
+
+                        // invoker包装成DelegateProviderMetaDataInvoker
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
+                         // 进入ProtocolFilterWrapper的 export（）, DubboProtocol export()
+                        // filter=org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper
+                        // 核心代码 ？？？
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
+
                         exporters.add(exporter);
                     }
                 } else {
@@ -637,6 +652,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+
+
         Exporter<?> exporter = protocol.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);

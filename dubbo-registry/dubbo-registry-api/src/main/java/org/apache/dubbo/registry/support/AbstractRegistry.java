@@ -89,6 +89,7 @@ public abstract class AbstractRegistry implements Registry {
     private File file;
 
     public AbstractRegistry(URL url) {
+
         setUrl(url);
         // Start file save timer
         syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
@@ -105,6 +106,7 @@ public abstract class AbstractRegistry implements Registry {
         this.file = file;
         // When starting the subscription center,
         // we need to read the local cache file for future Registry fault tolerance processing.
+        // 本地读取
         loadProperties();
         notify(url.getBackupUrls());
     }
@@ -415,9 +417,13 @@ public abstract class AbstractRegistry implements Registry {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
+
+            // 针对于消费者 RegistryDirectory.notify()
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
+
+            // 把服务端的信息保存到本地
             saveProperties(url);
         }
     }
@@ -445,6 +451,7 @@ public abstract class AbstractRegistry implements Registry {
             if (syncSaveFile) {
                 doSaveProperties(version);
             } else {
+                // 开启线程保存
                 registryCacheExecutor.execute(new SaveProperties(version));
             }
         } catch (Throwable t) {
